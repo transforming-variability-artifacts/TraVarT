@@ -97,7 +97,7 @@ public class DefaultCoreModelSampler implements ISampler<FeatureModel> {
 				: invalidSamples;
 	}
 
-	private void init(final FeatureModel fm) throws NotSupportedVariabilityTypeException {
+	private void init(final FeatureModel fm) {
 		IFeatureModel featureIdeFm = new MultiFeatureModelFactory().create();
 		toFeatureIdeFm(fm, featureIdeFm);
 		samples = sample(featureIdeFm);

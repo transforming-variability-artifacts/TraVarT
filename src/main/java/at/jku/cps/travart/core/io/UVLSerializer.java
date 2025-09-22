@@ -32,7 +32,7 @@ import de.vill.model.FeatureModel;
  * @see <a href="https://modevar.github.io/">MODEVAR initiative</a>
  */
 public class UVLSerializer implements ISerializer<FeatureModel> {
-	public static Format UVL_FORMAT = new Format("UVL", ".uvl", true, true);
+	public static final Format UVL_FORMAT = new Format("UVL", ".uvl", true, true);
 
 	@Override
 	public String serialize(FeatureModel uvlModel) throws NotSupportedVariabilityTypeException {
