@@ -41,9 +41,9 @@ public interface ISerializer<T> {
 	 * @throws NotSupportedVariabilityTypeException if the given variability model
 	 *                                              can not be serialized.
 	 */
-	default void serializeToFile(T model, Path filePath) throws IOException, NotSupportedVariabilityTypeException {
+	default Path serializeToFile(T model, Path filePath) throws IOException, NotSupportedVariabilityTypeException {
         if (this.getFormat().isText()) {
-            Files.writeString(filePath, serialize(model));
+            return Files.writeString(filePath, serialize(model));
         } else {
             throw new NotSupportedVariabilityTypeException("This serializer does not support text-based serialization.");
         }

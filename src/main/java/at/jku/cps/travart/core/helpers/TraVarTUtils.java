@@ -44,6 +44,8 @@ import org.logicng.formulas.Literal;
 import org.logicng.formulas.Or;
 
 import at.jku.cps.travart.core.common.IConfigurable;
+import at.jku.cps.travart.core.common.ILanguage;
+import at.jku.cps.travart.core.common.IStatistics;
 import at.jku.cps.travart.core.transformation.DefaultModelTransformationProperties;
 import de.vill.main.UVLModelFactory;
 import de.vill.model.Attribute;
@@ -828,7 +830,7 @@ public class TraVarTUtils {
 	 * @param formula the formula to check
 	 * @return the amount of positive literals as long
 	 */
-	public static long countPositiveFormulaLiterals(final Formula formula) {
+	public static int countPositiveFormulaLiterals(final Formula formula) {
 		Objects.requireNonNull(formula);
 		return countFormulaLiterals(formula, false);
 	}
@@ -839,7 +841,7 @@ public class TraVarTUtils {
 	 * @param formula the formula to check
 	 * @return the amount of negative literals as long
 	 */
-	public static long countNegativeFormulaLiterals(final Formula formula) {
+	public static int countNegativeFormulaLiterals(final Formula formula) {
 		Objects.requireNonNull(formula);
 		return countFormulaLiterals(formula, true);
 	}
@@ -852,13 +854,13 @@ public class TraVarTUtils {
 	 *                positive ones
 	 * @return amount of found literals as long
 	 */
-	private static long countFormulaLiterals(final Formula formula, final boolean negated) {
+	private static int countFormulaLiterals(final Formula formula, final boolean negated) {
 		Objects.requireNonNull(formula);
 		if (negated) {
-			return formula.literals().stream().filter(lit -> !lit.phase()).count();
+			return (int) formula.literals().stream().filter(lit -> !lit.phase()).count();
 		}
 
-		return formula.literals().stream().filter(Literal::phase).count();
+		return (int) formula.literals().stream().filter(Literal::phase).count();
 	}
 
 	/**
@@ -952,11 +954,11 @@ public class TraVarTUtils {
 	 * @param constraint the constraint to check
 	 * @return the highest depth of the constraint as long
 	 */
-	public static long getMaxDepth(final Constraint constraint) {
+	public static int getMaxDepth(final Constraint constraint) {
 		Objects.requireNonNull(constraint);
-		long count = 1;
+		int count = 1;
 		for (final Constraint child : constraint.getConstraintSubParts()) {
-			final long childCount = getMaxDepth(child) + 1;
+			final int childCount = getMaxDepth(child) + 1;
 			if (childCount > count) {
 				count = childCount;
 			}
@@ -1108,7 +1110,7 @@ public class TraVarTUtils {
 	 * @param constraint the constraint to inspect
 	 * @return the amount of found negative literals as long
 	 */
-	public static long countNegativeLiterals(final Constraint constraint) {
+	public static int countNegativeLiterals(final Constraint constraint) {
 		Objects.requireNonNull(constraint);
 		final Formula formula = buildFormulaFromConstraint(constraint, formulaFactory);
 		return countNegativeFormulaLiterals(formula);
@@ -1131,7 +1133,7 @@ public class TraVarTUtils {
 	 * @param constraint the constraint to inspect
 	 * @return the amount of found positive literals as long
 	 */
-	public static long countPositiveLiterals(final Constraint constraint) {
+	public static int countPositiveLiterals(final Constraint constraint) {
 		Objects.requireNonNull(constraint);
 		final Formula formula = buildFormulaFromConstraint(constraint, formulaFactory);
 		return countPositiveFormulaLiterals(formula);
@@ -1246,6 +1248,7 @@ public class TraVarTUtils {
 			final GroupType groupType) {
 		Objects.requireNonNull(fm);
 		Objects.requireNonNull(feature);
+		Objects.requireNonNull(parent);
 		if (feature.getParentGroup() != null) {
 			feature.getParentGroup().getFeatures().remove(feature);
 			// NPE here: When the feature is removed from its group, getParentGroup returns null
@@ -1268,6 +1271,8 @@ public class TraVarTUtils {
 		feature.setParentGroup(group);
 		TraVarTUtils.addFeature(fm, parent);
 		TraVarTUtils.addFeature(fm, feature);
+		// Ensure that features do not disappear after being added to a group
+		assert (getFeatureMapFromRoot(fm.getRootFeature()).values().contains(feature));
 	}
 
 	/**
@@ -1338,6 +1343,16 @@ public class TraVarTUtils {
 		}
 		return null;
 	}
+	
+	// Allow index-less getting of groups, especially right after using addGroup
+	public static Group getLastGroup(final Feature feature, final GroupType groupType) {
+		final List<Group> groups = feature.getChildren().stream().filter(g -> groupType.equals(g.GROUPTYPE))
+				.collect(Collectors.toList());
+		if (!groups.isEmpty()) {
+			return groups.getLast();
+		}
+		return null;
+	}
 
 	// TODO Add method that returns all groups of a specific type
 
@@ -1392,4 +1407,5 @@ public class TraVarTUtils {
 		logger.addHandler(fh);
 		return logger;
 	}
+	
 }

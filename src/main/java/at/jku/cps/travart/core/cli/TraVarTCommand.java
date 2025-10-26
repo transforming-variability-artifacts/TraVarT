@@ -19,28 +19,29 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import at.jku.cps.travart.core.helpers.TraVarTPluginManager;
-import picocli.CommandLine;
+import picocli.CommandLine; // Re-implement CLI with Commons CLI framework?
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ScopeType;
 
-// ValidateCommand.class,
-@Command(name = "travart", subcommands = { TransformCommand.class,
-		PluginCommand.class }, mixinStandardHelpOptions = true, version = "0.0.1", description = "TraVarT main command to transform and validate variability artifacts.")
+@Command(name = "travart", subcommands = {TransformCommand.class,
+		PluginCommand.class,
+		BenchmarkCommand.class}, mixinStandardHelpOptions = true, version = "0.0.1", description = "TraVarT main command to transform and validate variability artifacts.")
 public class TraVarTCommand {
 
 	static {
 		TraVarTPluginManager.startPlugins();
 	}
 
-	@Option(names = { "-v",
-			"--verbose" }, scope = ScopeType.INHERIT, description = "Enable verbose log information during execution.")
+	@Option(names = {"-v",
+			"--verbose"}, scope = ScopeType.INHERIT, description = "Enable verbose log information during execution.")
 	public void setVerbose(final boolean[] verbose) {
-		Configurator.setRootLevel(verbose.length > 0 ? Level.DEBUG : Level.INFO);
+		Configurator
+				.setRootLevel(verbose.length > 0 ? Level.DEBUG : Level.INFO);
 	}
 
 	public static void main(final String[] args) {
-		String[] arg = { "-h" };
+		String[] arg = {"-h"};
 		if (args.length != 0) {
 			arg = args;
 		}
