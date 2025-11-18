@@ -27,18 +27,6 @@ import de.vill.model.Group;
 
 public final class FeatureModelStatistics implements IStatistics<FeatureModel> {
 
-	private static FeatureModelStatistics instance;
-
-	private FeatureModelStatistics() {
-	}
-
-	public static FeatureModelStatistics getInstance() {
-		if (instance == null) {
-			instance = new FeatureModelStatistics();
-		}
-		return instance;
-	}
-
 	@Override
 	public long getVariabilityElementsCount(final FeatureModel fm) {
 		return Objects.requireNonNull(fm).getFeatureMap().size();
@@ -46,7 +34,7 @@ public final class FeatureModelStatistics implements IStatistics<FeatureModel> {
 
 	@Override
 	public long getConstraintsCount(final FeatureModel fm) {
-		return TraVarTUtils.getFeatureConstraints(fm).size() + TraVarTUtils.getGlobalConstraints(fm).size()
+		return (long) TraVarTUtils.getFeatureConstraints(fm).size() + TraVarTUtils.getGlobalConstraints(fm).size()
 				+ TraVarTUtils.getLiteralConstraints(fm).size() + TraVarTUtils.getOwnConstraints(fm).size();
 	}
 

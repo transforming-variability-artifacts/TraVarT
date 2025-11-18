@@ -40,8 +40,8 @@ import de.vill.model.FeatureModel;
 import de.vill.model.Group;
 import de.vill.model.constraint.Constraint;
 
-public class UVLVerifier {
-	private static final Logger logger= Logger.getLogger(UVLVerifier.class.getName());
+public final class UVLVerifier {
+	private static final Logger logger = Logger.getLogger(UVLVerifier.class.getName());
 
 	/**
 	 * forbid public constructor because this is purely a static utility class
@@ -72,7 +72,8 @@ public class UVLVerifier {
 			solver.addHardFormula(equalityFormula);
 			solver.solve();
 
-			throw new VerificationException("Verification failed.\n",formulaModel1,formulaModel2,solver.model().toString());
+			throw new VerificationException("Verification failed.\n", formulaModel1, formulaModel2,
+					solver.model().toString());
 		}
 		return true;
 	}
@@ -103,11 +104,8 @@ public class UVLVerifier {
 	 * @return a set of formulas to be processed with logicNG
 	 */
 	public static Set<Formula> uvlConstraintstoFormulas(FormulaFactory ff, Collection<Constraint> constraints) {
-		return constraints.stream()
-				.map(c -> c.toString(false, Strings.EMPTY))
-				.map(c -> c.replace(NOT.uvl(), NOT.ng()))
-				.map(c -> UVLVerifier.parseUVLconstraintAsFormula(ff, c))
-				.filter(Objects::nonNull)
+		return constraints.stream().map(c -> c.toString(false, Strings.EMPTY)).map(c -> c.replace(NOT.uvl(), NOT.ng()))
+				.map(c -> UVLVerifier.parseUVLconstraintAsFormula(ff, c)).filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 	}
 
@@ -122,8 +120,8 @@ public class UVLVerifier {
 	 */
 	public static Formula getModelsAsFormula(FormulaFactory ff, FeatureModel fm) {
 		Formula formula = ff.and(uvlConstraintstoFormulas(ff, fm.getConstraints()));
-		return ff.equivalence(ff.literal(fm.getRootFeature()
-				.getFeatureName(), true), ff.and(formula, getFormulaFromUVLTree(ff, fm))) ;
+		return ff.equivalence(ff.literal(fm.getRootFeature().getFeatureName(), true),
+				ff.and(formula, getFormulaFromUVLTree(ff, fm)));
 	}
 
 	/**
@@ -158,13 +156,8 @@ public class UVLVerifier {
 	 * @return
 	 */
 	public static Formula getFormulaFromUVLTree(FormulaFactory ff, FeatureModel fm) {
-		return ff.and(fm.getFeatureMap()
-				.values()
-				.stream()
-				.flatMap(f -> f.getChildren()
-						.stream())
-				.map(g -> getGroupAsFormula(ff, g))
-				.collect(Collectors.toList()));
+		return ff.and(fm.getFeatureMap().values().stream().flatMap(f -> f.getChildren().stream())
+				.map(g -> getGroupAsFormula(ff, g)).toList());
 	}
 
 	/**
@@ -178,9 +171,7 @@ public class UVLVerifier {
 	 * @return a collection of variables corresponding to the passed features
 	 */
 	private static Collection<Variable> literalsFromFeatures(FormulaFactory ff, Collection<Feature> features) {
-		return features.stream()
-				.map(f -> ff.variable(f.getFeatureName()))
-				.collect(Collectors.toList());
+		return features.stream().map(f -> ff.variable(f.getFeatureName())).toList();
 	}
 
 	/**
@@ -194,8 +185,7 @@ public class UVLVerifier {
 	 */
 	private static Formula getGroupAsFormula(FormulaFactory ff, Group g) {
 		Collection<Variable> literals = literalsFromFeatures(ff, g.getFeatures());
-		Literal parentLiteral = ff.literal(g.getParentFeature()
-				.getFeatureName(), true);
+		Literal parentLiteral = ff.literal(g.getParentFeature().getFeatureName(), true);
 		switch (g.GROUPTYPE) {
 		case OR:
 			return ff.and(ff.implication(ff.or(literals), parentLiteral), ff.or(literals));

@@ -200,14 +200,11 @@ public class DefaultCoreModelOptimizer implements IModelOptimizer<FeatureModel> 
 			if (TraVarTUtils.isRequires(constr)) {
 				final de.vill.model.constraint.Constraint cnf = TraVarTUtils.buildConstraintFromFormula(
 						TraVarTUtils.buildFormulaFromConstraint(constr, new FormulaFactory()).cnf());
-				if (TraVarTUtils.isRequires(constr)) {
-					final de.vill.model.constraint.Constraint right = TraVarTUtils.getRightConstraint(cnf);
-					if (right != null && TraVarTUtils.isLiteral(right)) {
-						final Feature rightFeature = TraVarTUtils.getFeature(fm,
-								((LiteralConstraint) right).getLiteral());
-						if (TraVarTUtils.isInGroup(rightFeature, Group.GroupType.MANDATORY)) {
-							iterator.remove();
-						}
+				final de.vill.model.constraint.Constraint right = TraVarTUtils.getRightConstraint(cnf);
+				if (right != null && TraVarTUtils.isLiteral(right)) {
+					final Feature rightFeature = TraVarTUtils.getFeature(fm, ((LiteralConstraint) right).getLiteral());
+					if (TraVarTUtils.isInGroup(rightFeature, Group.GroupType.MANDATORY)) {
+						iterator.remove();
 					}
 				}
 			}
