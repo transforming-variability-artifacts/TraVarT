@@ -17,6 +17,7 @@ package at.jku.cps.travart.core.cli;
 
 import java.util.concurrent.Callable;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,15 +32,17 @@ public class PluginCommand implements Callable<Integer> {
 
 	@Override
 	public Integer call() throws Exception {
-		LOGGER.debug("Look up the plugins installed...");
+		LOGGER.debug("Check for installed plugins...");
+		TraVarTPluginManager.startPlugins();
 		if (!TraVarTPluginManager.getAvailablePlugins().isEmpty()) {
-			LOGGER.debug(String.format("# Pugins found %s", TraVarTPluginManager.getAvailablePlugins().size()));
-			System.out.println(String.format("Installed Plugins: %s", toPluginNameString()));
+			LOGGER.debug(String.format("Plugins found: %s", TraVarTPluginManager.getAvailablePlugins().size()));
+			System.out.println(String.format("Installed plugins: %s", toPluginNameString()));
+			// FIXME Avoid magic string, use AutoService to provide UVL transformer as if it were a plugin?
 			System.out.println(
 					"Languages provided by TraVarT...\n- at.jku.cps.travart.core[de.vill.uvl-parser] Universal Variability Language v1.0-SNAPSHOT");
 			return 0;
 		}
-		LOGGER.error("No installed plugins could be found. Place them into a plugins folder next to the executable!");
+		LOGGER.error("No installed plugins could be found. Place them into the `plugins` folder next to the executable!");
 		return -1;
 	}
 
@@ -55,8 +58,8 @@ public class PluginCommand implements Callable<Integer> {
 	private static String toPluginString(final IPlugin plugin) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(plugin.getId());
-		builder.append(" ").append(plugin.getName());
-		builder.append(" ").append(plugin.getVersion());
+		builder.append(", version ").append(plugin.getVersion());
+		builder.append(", supports file type: ").append(plugin.getName());
 		return builder.toString();
 	}
 

@@ -16,8 +16,9 @@
 package at.jku.cps.travart.core;
 
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import at.jku.cps.travart.core.common.IStatistics;
 import at.jku.cps.travart.core.helpers.TraVarTUtils;
@@ -28,8 +29,8 @@ import de.vill.model.Group;
 public final class FeatureModelStatistics implements IStatistics<FeatureModel> {
 
 	@Override
-	public long getVariabilityElementsCount(final FeatureModel fm) {
-		return Objects.requireNonNull(fm).getFeatureMap().size();
+	public int getVariabilityElementsCount(final FeatureModel fm) {
+		return TraVarTUtils.getFeatureMapFromRoot(fm.getRootFeature()).size();
 	}
 
 	@Override
@@ -40,53 +41,53 @@ public final class FeatureModelStatistics implements IStatistics<FeatureModel> {
 
 	@Override
 	public void logModelStatistics(final Logger logger, final FeatureModel fm) {
-		logger.log(Level.INFO, "Root Name: {0}", fm.getRootFeature().getFeatureName());
-		logger.log(Level.INFO, "#Features: {0}", getVariabilityElementsCount(fm));
-		logger.log(Level.INFO, "#Abstract Features: {0}", countAbstractFeatures(fm));
-		logger.log(Level.INFO, "#Mandatory Features: {0}", countMandatoryFeatures(fm));
-		logger.log(Level.INFO, "#Optional Features: {0}", countOptionalFeatures(fm));
-		logger.log(Level.INFO, "#Or groups: {0}", countOrGroups(fm));
-		logger.log(Level.INFO, "#Xor groups: {0}", countXorGroups(fm));
-		logger.log(Level.INFO, "#Constraints: {0}", getConstraintsCount(fm));
-		logger.log(Level.INFO, "Tree height: {0}", computeFMHeight(TraVarTUtils.getRoot(fm)));
+		logger.log(Level.INFO, "Root Name: {}", fm.getRootFeature().getFeatureName());
+		logger.log(Level.INFO, "#Features: {}", getVariabilityElementsCount(fm));
+		logger.log(Level.INFO, "#Abstract Features: {}", countAbstractFeatures(fm));
+		logger.log(Level.INFO, "#Mandatory Features: {}", countMandatoryFeatures(fm));
+		logger.log(Level.INFO, "#Optional Features: {}", countOptionalFeatures(fm));
+		logger.log(Level.INFO, "#Or groups: {}", countOrGroups(fm));
+		logger.log(Level.INFO, "#Xor groups: {}", countXorGroups(fm));
+		logger.log(Level.INFO, "#Constraints: {}", getConstraintsCount(fm));
+		logger.log(Level.INFO, "Tree height: {}", computeFMHeight(TraVarTUtils.getRoot(fm)));
 	}
 
-	private static long countAbstractFeatures(final FeatureModel fm) {
-		return TraVarTUtils.getFeatures(fm).stream().filter(TraVarTUtils::isAbstract).count();
+	private static int countAbstractFeatures(final FeatureModel fm) {
+		return (int) TraVarTUtils.getFeatures(fm).stream().filter(TraVarTUtils::isAbstract).count();
 	}
 
-	private static long countMandatoryFeatures(final FeatureModel fm) {
-		return TraVarTUtils.getFeatures(fm).stream().filter(TraVarTUtils::isMandatory).count();
+	private static int countMandatoryFeatures(final FeatureModel fm) {
+		return (int) TraVarTUtils.getFeatures(fm).stream().filter(TraVarTUtils::isMandatory).count();
 	}
 
-	private static long countOptionalFeatures(final FeatureModel fm) {
-		return TraVarTUtils.getFeatures(fm).stream()
+	private static int countOptionalFeatures(final FeatureModel fm) {
+		return (int) TraVarTUtils.getFeatures(fm).stream()
 				.filter(f -> TraVarTUtils.checkGroupType(f, Group.GroupType.OPTIONAL)).count();
 	}
 
-	private static long countOrGroups(final FeatureModel fm) {
+	private static int countOrGroups(final FeatureModel fm) {
 		return countGroupType(fm, Group.GroupType.OR);
 	}
 
-	private static long countXorGroups(final FeatureModel fm) {
+	private static int countXorGroups(final FeatureModel fm) {
 		return countGroupType(fm, Group.GroupType.ALTERNATIVE);
 	}
 
-	private static long countGroupType(final FeatureModel fm, final Group.GroupType grouptype) {
-		long count = 0;
+	private static int countGroupType(final FeatureModel fm, final Group.GroupType grouptype) {
+		int count = 0;
 		for (Feature feature : TraVarTUtils.getFeatures(fm)) {
 			count += TraVarTUtils.countGroup(feature, grouptype);
 		}
 		return count;
 	}
 
-	private static long computeFMHeight(final Feature feature) {
+	private static int computeFMHeight(final Feature feature) {
 		if (!TraVarTUtils.hasChildren(feature)) {
 			return 0;
 		}
-		long maxDepth = Integer.MIN_VALUE;
+		int maxDepth = Integer.MIN_VALUE;
 		for (Feature child : TraVarTUtils.getChildren(feature)) {
-			long depth = computeFMHeight(child);
+			int depth = computeFMHeight(child);
 			if (maxDepth < depth) {
 				maxDepth = depth;
 			}
