@@ -38,7 +38,7 @@ public class UVL implements ILanguage<FeatureModel> {
 
     @Override
     public IStatistics<FeatureModel> getStatistics() {
-        return FeatureModelStatistics.getInstance();
+        return new FeatureModelStatistics();
     }
 
     @Override

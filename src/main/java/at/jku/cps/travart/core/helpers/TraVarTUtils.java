@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import java.util.stream.Collectors;
 
 import org.logicng.formulas.FType;
 import org.logicng.formulas.Formula;
@@ -62,7 +61,7 @@ import de.vill.model.constraint.NotConstraint;
 import de.vill.model.constraint.OrConstraint;
 import de.vill.model.constraint.ParenthesisConstraint;
 
-public class TraVarTUtils {
+public final class TraVarTUtils {
 	private static final UVLModelFactory factory = new UVLModelFactory();
 	private static final FormulaFactory formulaFactory = new FormulaFactory();
 
@@ -117,7 +116,7 @@ public class TraVarTUtils {
 			return featureMap;
 		}
 		final List<Feature> childFeatures = feature.getChildren().stream().flatMap(g -> g.getFeatures().stream())
-				.collect(Collectors.toList());
+				.toList();
 		// add all children
 		for (final Feature childFeature : childFeatures) {
 			featureMap.putAll(getFeatureMapFromRoot(childFeature));
@@ -409,26 +408,32 @@ public class TraVarTUtils {
 		Objects.requireNonNull(constraint);
 		Objects.requireNonNull(factory);
 		Formula term = null;
-		if (constraint instanceof ImplicationConstraint) {
-			term = factory.implication(
-					buildFormulaFromConstraint(((ImplicationConstraint) constraint).getLeft(), factory),
-					buildFormulaFromConstraint(((ImplicationConstraint) constraint).getRight(), factory));
-		} else if (constraint instanceof EquivalenceConstraint) {
-			term = factory.equivalence(
-					buildFormulaFromConstraint(((EquivalenceConstraint) constraint).getLeft(), factory),
-					buildFormulaFromConstraint(((EquivalenceConstraint) constraint).getRight(), factory));
-		} else if (constraint instanceof AndConstraint) {
-			term = factory.and(buildFormulaFromConstraint(((AndConstraint) constraint).getLeft(), factory),
-					buildFormulaFromConstraint(((AndConstraint) constraint).getRight(), factory));
-		} else if (constraint instanceof OrConstraint) {
-			term = factory.or(buildFormulaFromConstraint(((OrConstraint) constraint).getLeft(), factory),
-					buildFormulaFromConstraint(((OrConstraint) constraint).getRight(), factory));
-		} else if (constraint instanceof NotConstraint) {
-			term = factory.not(buildFormulaFromConstraint(((NotConstraint) constraint).getContent(), factory));
-		} else if (constraint instanceof ParenthesisConstraint) {
-			term = buildFormulaFromConstraint(((ParenthesisConstraint) constraint).getContent(), factory);
-		} else {
+		switch (constraint) {
+		case ImplicationConstraint ic:
+			term = factory.implication(buildFormulaFromConstraint(ic.getLeft(), factory),
+					buildFormulaFromConstraint(ic.getRight(), factory));
+			break;
+		case EquivalenceConstraint ec:
+			term = factory.equivalence(buildFormulaFromConstraint(ec.getLeft(), factory),
+					buildFormulaFromConstraint(ec.getRight(), factory));
+			break;
+		case AndConstraint ac:
+			term = factory.and(buildFormulaFromConstraint(ac.getLeft(), factory),
+					buildFormulaFromConstraint(ac.getRight(), factory));
+			break;
+		case OrConstraint oc:
+			term = factory.or(buildFormulaFromConstraint(oc.getLeft(), factory),
+					buildFormulaFromConstraint(oc.getRight(), factory));
+			break;
+		case NotConstraint nc:
+			term = factory.not(buildFormulaFromConstraint(nc.getContent(), factory));
+			break;
+		case ParenthesisConstraint pc:
+			term = buildFormulaFromConstraint(pc.getContent(), factory);
+			break;
+		default:
 			term = factory.literal(((LiteralConstraint) constraint).getLiteral(), true);
+			break;
 		}
 		return term;
 	}
@@ -918,10 +923,8 @@ public class TraVarTUtils {
 		Objects.requireNonNull(constraint);
 		Formula formula = buildFormulaFromConstraint(constraint, formulaFactory);
 		formula = formula.cnf();
-		final List<Literal> positiveLiterals = formula.literals().stream().filter(Literal::phase)
-				.collect(Collectors.toList());
-		final List<Literal> negativeLiterals = formula.literals().stream().filter(lit -> !lit.phase())
-				.collect(Collectors.toList());
+		final List<Literal> positiveLiterals = formula.literals().stream().filter(Literal::phase).toList();
+		final List<Literal> negativeLiterals = formula.literals().stream().filter(lit -> !lit.phase()).toList();
 		return formula.type().equals(FType.OR) && positiveLiterals.isEmpty() && !negativeLiterals.isEmpty();
 	}
 
@@ -933,8 +936,7 @@ public class TraVarTUtils {
 	 */
 	public static boolean isNegativeLiteral(final Constraint constraint) {
 		Objects.requireNonNull(constraint);
-		return constraint instanceof NotConstraint
-				&& ((NotConstraint) constraint).getContent() instanceof LiteralConstraint;
+		return constraint instanceof NotConstraint nc && nc.getContent() instanceof LiteralConstraint;
 	}
 
 	/**
@@ -1020,7 +1022,7 @@ public class TraVarTUtils {
 	private static List<Feature> findRoots(final Collection<Feature> features) {
 		Objects.requireNonNull(features);
 		// return all features with no parent
-		return features.stream().filter(f -> !TraVarTUtils.hasParentFeature(f)).collect(Collectors.toList());
+		return features.stream().filter(f -> !TraVarTUtils.hasParentFeature(f)).toList();
 	}
 
 	/**
@@ -1082,13 +1084,11 @@ public class TraVarTUtils {
 	 */
 	public static boolean isSingleFeatureExcludes(final Constraint constraint) {
 		Objects.requireNonNull(constraint);
-		if (constraint instanceof OrConstraint) {
-			final OrConstraint orConstraint = (OrConstraint) constraint;
-			return isNegativeLiteral(orConstraint.getLeft()) && isNegativeLiteral(orConstraint.getRight());
+		if (constraint instanceof OrConstraint oc) {
+			return isNegativeLiteral(oc.getLeft()) && isNegativeLiteral(oc.getRight());
 		}
-		if (constraint instanceof ImplicationConstraint) {
-			final ImplicationConstraint implConstraint = (ImplicationConstraint) constraint;
-			return isPositiveLiteral(implConstraint.getLeft()) && isNegativeLiteral(implConstraint.getRight());
+		if (constraint instanceof ImplicationConstraint ic) {
+			return isPositiveLiteral(ic.getLeft()) && isNegativeLiteral(ic.getRight());
 		}
 		return false;
 	}
@@ -1148,13 +1148,12 @@ public class TraVarTUtils {
 	public static Set<Constraint> getNegativeLiterals(final Constraint constraint) {
 		Objects.requireNonNull(constraint);
 		final Set<Constraint> literals = new HashSet<>();
-		if (constraint instanceof NotConstraint
-				&& ((NotConstraint) constraint).getContent() instanceof LiteralConstraint) {
+		if (constraint instanceof NotConstraint nc && nc.getContent() instanceof LiteralConstraint) {
 			literals.add(((NotConstraint) constraint).getContent());
 			return literals;
 		}
-		if (constraint instanceof ParenthesisConstraint) {
-			literals.addAll(getNegativeLiterals(((ParenthesisConstraint) constraint).getContent()));
+		if (constraint instanceof ParenthesisConstraint pc) {
+			literals.addAll(getNegativeLiterals(pc.getContent()));
 		}
 		for (final Constraint subConst : constraint.getConstraintSubParts()) {
 			literals.addAll(getNegativeLiterals(subConst));
@@ -1176,8 +1175,8 @@ public class TraVarTUtils {
 			literals.add(constraint);
 			return literals;
 		}
-		if (constraint instanceof ParenthesisConstraint) {
-			literals.addAll(getLiterals(((ParenthesisConstraint) constraint).getContent()));
+		if (constraint instanceof ParenthesisConstraint pc) {
+			literals.addAll(getLiterals(pc.getContent()));
 		}
 		for (final Constraint subConst : constraint.getConstraintSubParts()) {
 			literals.addAll(getLiterals(subConst));
@@ -1211,8 +1210,8 @@ public class TraVarTUtils {
 			literals.add(constraint);
 			return literals;
 		}
-		if (constraint instanceof ParenthesisConstraint) {
-			literals.addAll(getPositiveLiterals(((ParenthesisConstraint) constraint).getContent()));
+		if (constraint instanceof ParenthesisConstraint pc) {
+			literals.addAll(getPositiveLiterals(pc.getContent()));
 		}
 		for (final Constraint subConst : constraint.getConstraintSubParts()) {
 			literals.addAll(getPositiveLiterals(subConst));
@@ -1251,11 +1250,6 @@ public class TraVarTUtils {
 		Objects.requireNonNull(parent);
 		if (feature.getParentGroup() != null) {
 			feature.getParentGroup().getFeatures().remove(feature);
-			// NPE here: When the feature is removed from its group, getParentGroup returns null
-			// Short-circuited to bypass exception
-			if (false && feature.getParentGroup().getFeatures().isEmpty()) {
-				getParentFeature(feature).getChildren().remove(feature.getParentGroup());
-			}
 		}
 		final Optional<Group> optGroup = parent.getChildren().stream().filter(g -> g.GROUPTYPE.equals(groupType))
 				.findFirst();
@@ -1327,17 +1321,16 @@ public class TraVarTUtils {
 	 * Returns a group of type groupType from the given feature. If the feature
 	 * specifies multiple groups of the given type, the one with the given index
 	 * returned. If the feature does not specify a group of the given type, the
-	 * method creates one and returns it.
+	 * method returns {@code null}.
+	 * 
 	 * @see{{@link #hasGroup(Feature, GroupType)}}.
 	 *
 	 * @param feature   the feature to return the group of type grouptype from.
 	 * @param groupType the groupType to search for in the feature.
-	 * @return a group of type groupType, either from the given feature or a new
-	 *         one.
+	 * @return a group of type groupType of the given feature, or {@code null}
 	 */
 	public static Group getGroup(final Feature feature, final GroupType groupType, final int index) {
-		final List<Group> groups = feature.getChildren().stream().filter(g -> groupType.equals(g.GROUPTYPE))
-				.collect(Collectors.toList());
+		final List<Group> groups = getGroups(feature, groupType);
 		if (!groups.isEmpty()) {
 			return groups.get(index);
 		}
@@ -1354,7 +1347,20 @@ public class TraVarTUtils {
 		return null;
 	}
 
-	// TODO Add method that returns all groups of a specific type
+	/**
+	 * Return all groups of type groupType from the given feature. The list ist
+	 * empty, if the feature does not specify a group of the given groupType.
+	 * 
+	 * @see{{@link #hasGroup(Feature, GroupType)}}.
+	 *
+	 * @param feature   the feature to return the groups of type grouptype from.
+	 * @param groupType the groupType to search for in the feature.
+	 * @return a list of all group of type groupType of the given feature. The list
+	 *         may be empty, if the group does not specify such a group.
+	 */
+	public static List<Group> getGroups(final Feature feature, final GroupType groupType) {
+		return feature.getChildren().stream().filter(g -> groupType.equals(g.GROUPTYPE)).toList();
+	}
 
 	/**
 	 * Adds a new group to the parent feature of type groupType, which contains the
