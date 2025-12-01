@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.14.0</version>
+			<version>1.14.1</version>
 		</dependency>
 		<!-- Guava should be included through AutoService, but because we use it directly, it's added explicitly here -->
 		<dependency>
