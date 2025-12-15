@@ -39,7 +39,7 @@ jobs:
       run: |
         mkdir artifacts
         cp target/*.jar artifacts/ -R
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       with:
          name: Jars
          path: artifacts
