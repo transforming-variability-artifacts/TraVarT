@@ -13,7 +13,7 @@
 		<deploy.disabled>true</deploy.disabled>
 		<source.disabled>true</source.disabled>
 		<checkstyle-maven-plugin.version>3.6.0</checkstyle-maven-plugin.version>
-		<log4j.version>2.25.2</log4j.version>
+		<log4j.version>2.25.3</log4j.version>
 		<auto-service.version>1.1.1</auto-service.version>
 	</properties>
 
