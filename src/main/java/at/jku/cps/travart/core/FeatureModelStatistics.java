@@ -15,8 +15,6 @@
  *******************************************************************************/
 package at.jku.cps.travart.core;
 
-import java.util.Objects;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
@@ -34,35 +32,46 @@ public final class FeatureModelStatistics implements IStatistics<FeatureModel> {
 	}
 
 	@Override
-	public long getConstraintsCount(final FeatureModel fm) {
-		return (long) TraVarTUtils.getFeatureConstraints(fm).size() + TraVarTUtils.getGlobalConstraints(fm).size()
-				+ TraVarTUtils.getLiteralConstraints(fm).size() + TraVarTUtils.getOwnConstraints(fm).size();
+	public int getConstraintsCount(final FeatureModel fm) {
+		return TraVarTUtils.getFeatureConstraints(fm).size()
+				+ TraVarTUtils.getGlobalConstraints(fm).size()
+				+ TraVarTUtils.getLiteralConstraints(fm).size()
+				+ TraVarTUtils.getOwnConstraints(fm).size();
 	}
 
 	@Override
 	public void logModelStatistics(final Logger logger, final FeatureModel fm) {
-		logger.log(Level.INFO, "Root Name: {}", fm.getRootFeature().getFeatureName());
-		logger.log(Level.INFO, "#Features: {}", getVariabilityElementsCount(fm));
-		logger.log(Level.INFO, "#Abstract Features: {}", countAbstractFeatures(fm));
-		logger.log(Level.INFO, "#Mandatory Features: {}", countMandatoryFeatures(fm));
-		logger.log(Level.INFO, "#Optional Features: {}", countOptionalFeatures(fm));
+		logger.log(Level.INFO, "Root Name: {}",
+				fm.getRootFeature().getFeatureName());
+		logger.log(Level.INFO, "#Features: {}",
+				getVariabilityElementsCount(fm));
+		logger.log(Level.INFO, "#Abstract Features: {}",
+				countAbstractFeatures(fm));
+		logger.log(Level.INFO, "#Mandatory Features: {}",
+				countMandatoryFeatures(fm));
+		logger.log(Level.INFO, "#Optional Features: {}",
+				countOptionalFeatures(fm));
 		logger.log(Level.INFO, "#Or groups: {}", countOrGroups(fm));
 		logger.log(Level.INFO, "#Xor groups: {}", countXorGroups(fm));
 		logger.log(Level.INFO, "#Constraints: {}", getConstraintsCount(fm));
-		logger.log(Level.INFO, "Tree height: {}", computeFMHeight(TraVarTUtils.getRoot(fm)));
+		logger.log(Level.INFO, "Tree height: {}",
+				computeFMHeight(TraVarTUtils.getRoot(fm)));
 	}
 
 	private static int countAbstractFeatures(final FeatureModel fm) {
-		return (int) TraVarTUtils.getFeatures(fm).stream().filter(TraVarTUtils::isAbstract).count();
+		return (int) TraVarTUtils.getFeatures(fm).stream()
+				.filter(TraVarTUtils::isAbstract).count();
 	}
 
 	private static int countMandatoryFeatures(final FeatureModel fm) {
-		return (int) TraVarTUtils.getFeatures(fm).stream().filter(TraVarTUtils::isMandatory).count();
+		return (int) TraVarTUtils.getFeatures(fm).stream()
+				.filter(TraVarTUtils::isMandatory).count();
 	}
 
 	private static int countOptionalFeatures(final FeatureModel fm) {
-		return (int) TraVarTUtils.getFeatures(fm).stream()
-				.filter(f -> TraVarTUtils.checkGroupType(f, Group.GroupType.OPTIONAL)).count();
+		return (int) TraVarTUtils.getFeatures(fm).stream().filter(
+				f -> TraVarTUtils.checkGroupType(f, Group.GroupType.OPTIONAL))
+				.count();
 	}
 
 	private static int countOrGroups(final FeatureModel fm) {
@@ -73,7 +82,8 @@ public final class FeatureModelStatistics implements IStatistics<FeatureModel> {
 		return countGroupType(fm, Group.GroupType.ALTERNATIVE);
 	}
 
-	private static int countGroupType(final FeatureModel fm, final Group.GroupType grouptype) {
+	private static int countGroupType(final FeatureModel fm,
+			final Group.GroupType grouptype) {
 		int count = 0;
 		for (Feature feature : TraVarTUtils.getFeatures(fm)) {
 			count += TraVarTUtils.countGroup(feature, grouptype);

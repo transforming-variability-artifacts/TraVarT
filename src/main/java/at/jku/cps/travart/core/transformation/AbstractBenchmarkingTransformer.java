@@ -1,7 +1,6 @@
 package at.jku.cps.travart.core.transformation;
 
 import java.time.Instant;
-
 import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,48 +20,70 @@ import at.jku.cps.travart.core.common.IStatistics;
 import at.jku.cps.travart.core.exception.NotSupportedVariabilityTypeException;
 import de.vill.model.FeatureModel;
 
-public abstract class AbstractBenchmarkingTransformer<T> implements IEmitting, IModelTransformer<T> {
-	
+public abstract class AbstractBenchmarkingTransformer<T>
+		implements
+			IEmitting,
+			IModelTransformer<T> {
+
 	protected EventBus bus;
 	protected Level verbosity;
 
 	@Override
-	final public FeatureModel transform(T model, String modelName, STRATEGY strategy, boolean intermediate)
+	final public FeatureModel transform(T model, String modelName,
+			STRATEGY strategy, boolean intermediate)
 			throws NotSupportedVariabilityTypeException {
 		FeatureModel transformationResult;
-		post(new TransformationBeginEvent(Instant.now(), modelName, model.hashCode(), getTargetStatistics().getVariabilityElementsCount(model)), Level.INFO);
+		post(new TransformationBeginEvent(Instant.now(), modelName,
+				model.hashCode(),
+				getTargetStatistics().getVariabilityElementsCount(model)),
+				Level.INFO);
 		try {
 			transformationResult = transformInner(model, modelName, strategy);
 		} catch (Exception e) {
-			post(new TransformationEndEvent(Instant.now(), modelName, model.hashCode(), 0, false, intermediate), Level.INFO);				
+			post(new TransformationEndEvent(Instant.now(), modelName,
+					model.hashCode(), 0, false, intermediate), Level.INFO);
 			throw e;
 		}
-		post(new TransformationEndEvent(Instant.now(), modelName, model.hashCode(), FeatureModelStatistics.getInstance().getVariabilityElementsCount(transformationResult), true, intermediate), Level.INFO);
-		FeatureModelStatistics.getInstance().logModelStatistics(LogManager.getLogger(), transformationResult);
+		FeatureModelStatistics statProvider = new FeatureModelStatistics();
+		post(new TransformationEndEvent(Instant.now(), modelName,
+				model.hashCode(),
+				statProvider.getVariabilityElementsCount(transformationResult),
+				true, intermediate), Level.INFO);
+		statProvider.logModelStatistics(LogManager.getLogger(),
+				transformationResult);
 		return transformationResult;
 	}
 
 	@Override
-	final public T transform(FeatureModel model, String modelName, STRATEGY strategy, boolean intermediate)
+	final public T transform(FeatureModel model, String modelName,
+			STRATEGY strategy, boolean intermediate)
 			throws NotSupportedVariabilityTypeException {
 		T transformationResult;
-		post(new TransformationBeginEvent(Instant.now(), modelName, model.hashCode(), FeatureModelStatistics.getInstance().getVariabilityElementsCount(model)), Level.INFO);
+		FeatureModelStatistics statProvider = new FeatureModelStatistics();
+		post(new TransformationBeginEvent(Instant.now(), modelName,
+				model.hashCode(),
+				statProvider.getVariabilityElementsCount(model)), Level.INFO);
 		try {
 			transformationResult = transformInner(model, modelName, strategy);
 		} catch (Exception e) {
-			post(new TransformationEndEvent(Instant.now(), modelName, model.hashCode(), 0, false, intermediate), Level.INFO);
+			post(new TransformationEndEvent(Instant.now(), modelName,
+					model.hashCode(), 0, false, intermediate), Level.INFO);
 			throw e;
 		}
-		post(new TransformationEndEvent(Instant.now(), modelName, model.hashCode(), getTargetStatistics().getVariabilityElementsCount(transformationResult), true, intermediate), Level.INFO);
-		getTargetStatistics().logModelStatistics(LogManager.getLogger(), transformationResult);
+		post(new TransformationEndEvent(Instant.now(), modelName,
+				model.hashCode(), getTargetStatistics()
+						.getVariabilityElementsCount(transformationResult),
+				true, intermediate), Level.INFO);
+		getTargetStatistics().logModelStatistics(LogManager.getLogger(),
+				transformationResult);
 		return transformationResult;
 	}
-	
-	public abstract T transformInner(FeatureModel model, String modelName, STRATEGY strategy)
-			throws NotSupportedVariabilityTypeException;
-	
-	public abstract FeatureModel transformInner(T model, String modelName, STRATEGY strategy)
-			throws NotSupportedVariabilityTypeException;
+
+	public abstract T transformInner(FeatureModel model, String modelName,
+			STRATEGY strategy) throws NotSupportedVariabilityTypeException;
+
+	public abstract FeatureModel transformInner(T model, String modelName,
+			STRATEGY strategy) throws NotSupportedVariabilityTypeException;
 
 	@Override
 	public void setBus(EventBus bus) {
@@ -83,28 +104,28 @@ public abstract class AbstractBenchmarkingTransformer<T> implements IEmitting, I
 	public Level getVerbosity() {
 		return verbosity;
 	}
-	
+
 	@Override
 	public void triggerUnmuteEvent() {
 		if (Objects.nonNull(bus)) {
 			bus.post(new UnmuteEvent(Instant.now(), "", this.hashCode()));
 		}
 	}
-	
+
 	@Override
 	public void triggerMuteEvent() {
 		if (Objects.nonNull(bus)) {
 			bus.post(new MuteEvent(Instant.now(), "", this.hashCode()));
 		}
 	}
-	
-	// FIXME Somehow avoid code duplication, this needs to be implemented in the actual transformer logic as well?
+
 	private void post(IBenchmarkingEvent<?> event, Level visibility) {
-		if (Objects.nonNull(bus) && (this.verbosity.compareTo(visibility) >= 0)) {
+		if (Objects.nonNull(bus)
+				&& (this.verbosity.compareTo(visibility) >= 0)) {
 			bus.post(event);
 		}
 	}
-	
+
 	public abstract IStatistics<T> getTargetStatistics();
 
 }

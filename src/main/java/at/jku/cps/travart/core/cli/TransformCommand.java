@@ -95,12 +95,12 @@ public class TransformCommand implements Callable<Integer> {
 	@Parameters(index = "1", description = "The output path to which the variability artifact is transformed. If the source is given as a folder, this parameter must be a folder too.")
 	private Path targetPath;
 
-	@Option(names = {"-st", "-sourceType", "--st",
-			"--sourceType"}, required = true, description = "The mandatory type of the source variability artifacts, as listed in the plugin command.")
+	@Option(names = {"-st", "-sourceType", "--st", "--sourceType",
+			"--source-type"}, required = true, description = "The mandatory type of the source variability artifacts, as listed in the plugin command.")
 	private String sourceType;
 
-	@Option(names = {"-tt", "-targetType", "--tt",
-			"--targetType"}, required = true, description = "The mandatory target type of the transformed variability artifacts, as listed by the plugin command.")
+	@Option(names = {"-tt", "-targetType", "--tt", "--targetType",
+			"--target-type"}, required = true, description = "The mandatory target type of the transformed variability artifacts, as listed by the plugin command.")
 	private String targetType;
 
 	@Option(names = {"-b",

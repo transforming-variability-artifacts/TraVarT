@@ -21,12 +21,13 @@ import org.apache.logging.log4j.core.config.Configurator;
 import at.jku.cps.travart.core.helpers.TraVarTPluginManager;
 import picocli.CommandLine; // Re-implement CLI with Commons CLI framework?
 import picocli.CommandLine.Command;
+import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ScopeType;
 
 @Command(name = "travart", subcommands = {TransformCommand.class,
-		PluginCommand.class,
-		BenchmarkCommand.class}, mixinStandardHelpOptions = true, version = "0.0.1", description = "TraVarT main command to transform and validate variability artifacts.")
+		PluginCommand.class, BenchmarkCommand.class,
+		HelpCommand.class}, mixinStandardHelpOptions = true, version = "0.0.1", description = "TraVarT main command to transform and validate variability artifacts.")
 public class TraVarTCommand {
 
 	static {
@@ -46,7 +47,7 @@ public class TraVarTCommand {
 			arg = args;
 		}
 		int exitCode = new CommandLine(new TraVarTCommand()).execute(arg);
-		TraVarTPluginManager.stopPlugins();
+		// TraVarTPluginManager.stopPlugins();
 		System.exit(exitCode);
 	}
 }
