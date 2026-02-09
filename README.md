@@ -6,7 +6,7 @@ for UVL models, which is the pivot metamodel. Additionally, the core module has 
 To get started, copy over TraVarT plugins (as JAR archives) into the `plugins` folder in this repository (if this folder does not
 exist, create it, the path should be ignored by Git).
 
-The command-line interface provides three subcommands: `plugin`, `benchmark` and `transform'. An exhaustive list of possible
+The command-line interface provides three subcommands: `plugin`, `benchmark` and `transform`. An exhaustive list of possible
 options and flags for individual subcommands can be viewed by invoking the respective subcommand as a sub-subcommand of `help` i.e., `help plugin`.
 If you want to start TraVarT directly off this repository (and not over a compiled JAR file independent from the repository), invoke
 the Maven exection plugin over `mvn exec:java`. You can provide command-line arguments while using `exec:java` with `-Dexec.args`.
